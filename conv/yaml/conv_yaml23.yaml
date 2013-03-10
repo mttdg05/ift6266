@@ -1,0 +1,70 @@
+
+!obj:pylearn2.train.Train {
+    dataset: &train !pkl: "data/train_prep.pkl",
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 40,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [48, 48],
+            num_channels: 1
+        },
+        layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'h2',
+                     output_channels: 64,
+                     irange: .05,
+                     kernel_shape: [5, 5],
+                     pool_shape: [4, 4],
+                     pool_stride: [2, 2],
+                     max_kernel_norm: 1.936500,
+                     border_mode: 'full'
+                 }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'h3',
+                     output_channels: 64,
+                     irange: .05,
+                     kernel_shape: [5, 5],
+                     pool_shape: [4, 4],
+                     pool_stride: [2, 2],
+                     max_kernel_norm: 1.936500,
+                     border_mode: 'full'
+                 }, !obj:pylearn2.models.mlp.Softmax {
+                     max_col_norm: 1.9365,
+                     layer_name: 'y',
+                     n_classes: 7,
+                     istdev: .05
+                 }
+                ],
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        batch_size: 40,
+        learning_rate: 0.004113,
+        init_momentum: 0.000000,
+        monitoring_dataset:
+            {
+                'train' : *train,
+                'valid' : !pkl: "data/valid_prep.pkl"
+            },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts { costs: [
+            !obj:pylearn2.costs.cost.MethodCost {
+                method: 'cost_from_X',
+                supervised: 1
+            }, !obj:pylearn2.models.mlp.WeightDecay {
+                coeffs: [ .0, .0, .0]
+            }
+            ]
+        },
+        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+            channel_name: "valid_y_misclass",
+            prop_decrease: 0.,
+            N: 200
+        }
+    },
+    extensions:
+        [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_y_misclass',
+             save_path: "conv/best_pkl/conv_best23.pkl"
+        }, !obj:pylearn2.training_algorithms.sgd.MomentumAdjustor {
+            start: 1,
+            saturate: 10,
+            final_momentum: .99
+        }
+    ]
+}
