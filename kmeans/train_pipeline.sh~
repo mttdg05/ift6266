@@ -1,0 +1,38 @@
+#!/bin/sh
+
+: '
+# step 1 -> take patches with a stride = 1, whiten the data & save it in data/whiten_patches"patch_number".py
+# To avoid ram problems -> create multiple python file & run them one by one
+python make_patches_files.py train
+python patches/train/make_train_batch0.py && python patches/train/make_train_batch1.py && python patches/train/make_train_batch2.py && python patches/train/make_train_batch3.py 
+
+
+# step 2 -> take random patches , whiten, compute kmeans & save data/centers.npy
+python run_kmeans.py
+
+
+# step 3 -> compute the encoder & pool. 
+# create multiples files each containing a portion of the dataset 
+# and then  run them one by one.
+python make_encod_pool_files.py train
+
+
+python encod_pool/train/encod_pool0.py && python encod_pool/train/encod_pool1.py && python encod_pool/train/encod_pool2.py && python encod_pool/train/encod_pool3.py && python encod_pool/train/encod_pool4.py && python encod_pool/train/encod_pool5.py && python encod_pool/train/encod_pool6.py && python encod_pool/train/encod_pool7.py && python encod_pool/train/encod_pool8.py && python encod_pool/train/encod_pool9.py && python encod_pool/train/encod_pool10.py && python encod_pool/train/encod_pool11.py && python encod_pool/train/encod_pool12.py && python encod_pool/train/encod_pool13.py && python encod_pool/train/encod_pool14.py && python encod_pool/train/encod_pool15.py && python encod_pool/train/encod_pool16.py
+'
+
+
+# After the pooling the dimensions is reduced to 4000. We have 4178  points. 
+# A dataset of 4178 * 4000 is quite reasonable in terms of mememory -> aggregate it in one final dataset features.npy 
+# Check -> maybe the 4000 features vectors will increase the chances of overfitting
+
+python make_features_dataset.py train
+
+: '
+# Now we that we have a dataset of "useful" features (who knows ...) -> 
+# Train a simple one against all SVM (with sklearn) & use on the test set. 
+# Since the dataset is quite small ->  cross validation is used.
+
+python classify.py
+'
+
+

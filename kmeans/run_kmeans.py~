@@ -1,0 +1,42 @@
+import numpy as np
+import utils
+import kmeans
+import argparse
+
+if __name__ == '__main__'  :
+  parser = argparse.ArgumentParser()
+  parser.add_argument("which_set", help = "which_set : train || test")
+  args = parser.parse_args()
+  which_set = str(args.which_set)
+
+  inputs = np.load('train_inputs.npy')
+  n, d = inputs.shape 
+  k = 1000
+  d_sqrt = int(np.sqrt(d))
+  dpatch_sqrt = 6
+  dpatch = dpatch_sqrt ** 2
+   
+  
+  # extract random patches 
+  # kmeans requires lots of patches 
+  # so i take ~ 400.000 patches
+  crop_n_patches = 100
+  R = utils.random_patch(d_sqrt, dpatch_sqrt, crop_n_patches)
+  X = inputs[:, R].reshape((n * crop_n_patches, dpatch))
+  X.astype('float32')
+  
+  # preprocessing
+  print 'preprocessing random patches ...'
+  whitening_matrix = utils.compute_whitening_matrix(X)
+  inv_whitening_matrix = np.linalg.inv(whitening_matrix)
+  whiten_X = np.dot(whitening_matrix, X.T).T
+  print 'done preprocessing'
+  
+  k = 1000
+  iterations = 10
+  centers = kmeans.spherical_kmeans(whiten_X, k, iterations)
+  np.save('data/centers', centers)
+ 
+  
+ 
+  

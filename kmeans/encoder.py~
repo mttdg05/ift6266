@@ -1,0 +1,31 @@
+import numpy as np
+
+#  max{0, X * D.T - alpha}
+def soft_threshold(X, D, alpha) :
+  '''
+  X is n x d
+  D is k x d
+  alpha is a scalar constant
+  '''
+  proj = np.dot(X, D.T) - alpha
+  proj[ proj < 0 ] = 0.0
+  return proj
+
+def kmeans_triangle(data, C, k) : 
+  '''
+  data is nxd
+  '''
+  data = data.copy()
+  C = C.copy()
+  n, d = data.shape
+  k = C.shape[0]
+  C = C.reshape((k, 1, d))
+  X = np.repeat(data.reshape((1, n, d)), k, axis = 0).reshape((k, n, d))
+  dist_mat = np.sum((X - C) ** 2, axis = 2) # kxn
+  dist_mat = dist_mat.reshape((n, k))
+  C = C.reshape((d, k))
+  mu = np.mean(C, axis = 0).reshape((1, k))
+  f = mu - dist_mat
+  f[f < 0.0] = 0.0
+
+  return f
