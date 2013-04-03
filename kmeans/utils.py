@@ -177,6 +177,23 @@ def init_with_kmeans(X, K, initial_centers=None, niterations=1):
 
         return centers
          
+def one_hot(x, min_value, max_value) :
+  n = x.shape[0]
+  d = max_value - min_value + 1
+  one_hot = np.zeros((n, d))
+  for i in xrange(n):
+      one_hot[i, x[i]] = 1
+  return one_hot
+
+
+def read_in_chunks(file_object, chunk_size=1024):
+  """Lazy function (generator) to read a file piece by piece.
+     Default chunk size: 1k."""
+  while True:
+    data = file_object.read(chunk_size)
+    if not data : break
+    yield data
+
 
 def find_data_file(filename):
     home = os.environ['HOME']

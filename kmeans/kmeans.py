@@ -16,7 +16,14 @@ def spherical_kmeans(X, k, iterations):
     s = dot_prods[(n_range, winner)]
     for i in xrange(k) :
       pos = (winner == i)
-      D[i, :] += np.dot(s[pos], X[pos])
+      # non empty cluster
+      if X[pos].shape[0] != 0 : 
+        D[i, :] += np.dot(s[pos], X[pos])
+      # if we have an empty cluster -> reinitialize the centroid with a random point
+      else :
+        D[i, :] =  X[np.random.randint(0, n)]
+        
+      # unit lenght normalization
       D[i] *= 1.0 / math.sqrt(np.dot(D[i], D[i]))
  
   return D
@@ -44,8 +51,13 @@ def hard_kmeans(X, K, initial_centers = None, niterations = 20) :
     sqdists = sqdistances(X, centers)
     winner = np.argmin(sqdists, axis = 1)
     for k in range(K) :
-      centers[k, :] = X[winner == k].mean(axis = 0)
-
+      # non empty cluster
+      if X[winner == k].shape[0] != 0 : 
+        centers[k, :] = X[winner == k].mean(axis = 0)
+      # empty cluster -> take a random point
+      else :
+        centers[k, :] = X[np.random.randint(0, n)]
+        
   return centers
 
 

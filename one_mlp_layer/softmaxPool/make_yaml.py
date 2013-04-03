@@ -8,10 +8,20 @@ yaml_template="""
         layers: [
                  !obj:pylearn2.models.mlp.SoftmaxPool {
                      layer_name: 'h1',
-                     detector_layer_dim: %(detector_layer_dim)i,
+                     detector_layer_dim: %(detector_layer_dim1)i,
                      pool_size: 1,
-                     sparse_init: 15,
-                 }, !obj:pylearn2.models.mlp.Softmax {
+                     sparse_init: 5,
+                 },  !obj:pylearn2.models.mlp.SoftmaxPool {
+                     layer_name: 'h2',
+                     detector_layer_dim: %(detector_layer_dim2)i,
+                     pool_size: 1,
+                     sparse_init: 5,
+                 },  !obj:pylearn2.models.mlp.SoftmaxPool {
+                     layer_name: 'h3',
+                     detector_layer_dim: %(detector_layer_dim3)i,
+                     pool_size: 1,
+                     sparse_init: 5,
+                 },  !obj:pylearn2.models.mlp.Softmax {
                      layer_name: 'y',
                      n_classes: 7,
                      irange: 0.
@@ -35,7 +45,7 @@ yaml_template="""
                 method: 'cost_from_X',
                 supervised: 1
             }, !obj:pylearn2.models.mlp.WeightDecay {
-                coeffs: [ %(weight_decay_coeff1)f, %(weight_decay_coeff2)f]
+                coeffs: [ %(weight_decay_coeff1)f, %(weight_decay_coeff2)f, %(weight_decay_coeff3)f, %(weight_decay_coeff4)f]
             }
             ]
         },
@@ -63,8 +73,10 @@ yaml_template="""
 n = 10
 param_sets = []
 learning_rates = np.random.uniform(low=0.002, high = 0.005, size = n)
+#param_sets.append({'detector_layer_dim1': 100, 'detector_layer_dim2': 200, 'detector_layer_dim3': 300, 'batch_size': 100, 'learning_rate': 0.004, 'init_momentum': 0.99, 'weight_decay_coeff1': 0.0, 'weight_decay_coeff2': 0.0,  'weight_decay_coeff3': 0.0, 'weight_decay_coeff4': 0.0, 'save_path': ''.join(['"one_mlp_layer/softmaxPool/best_pkl/mlp_best', str(i), '.pkl"'])})
+
 for i in xrange(n) :
-  param_sets.append({'detector_layer_dim': 1300, 'batch_size': 100, 'learning_rate': learning_rates[i], 'init_momentum': 0.0, 'weight_decay_coeff1': 0.0005, 'weight_decay_coeff2': 0.005, 'save_path': ''.join(['"one_mlp_layer/softmaxPool/best_pkl/mlp_best', str(i), '.pkl"'])})
+  param_sets.append({'detector_layer_dim1': 100, 'detector_layer_dim2': 200, 'detector_layer_dim3': 400, 'batch_size': 100, 'learning_rate': 0.004, 'init_momentum': 0.99, 'weight_decay_coeff1': 0.0, 'weight_decay_coeff2': 0.0,  'weight_decay_coeff3': 0.0, 'weight_decay_coeff4': 0.0, 'save_path': ''.join(['"one_mlp_layer/softmaxPool/best_pkl/mlp_best', str(i), '.pkl"'])})
 
 for i, param_set in enumerate(param_sets):
   yaml_str = yaml_template % param_set

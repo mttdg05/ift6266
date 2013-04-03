@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import cPickle as pickle
+import pickle
 import csv
 import utils
 import kmeans
@@ -42,23 +42,31 @@ def sumPooling(X) :
   
 
 if __name__ == '__main__'  :
-  train_inputs = utils.load_data(utils.find_data_file('contest_dataset/train_inputs.p'))
-  train_labels = utils.load_data(utils.find_data_file('contest_dataset/train_labels.p'))
+  #train_inputs = utils.load_data(utils.find_data_file('contest_dataset/train_inputs.p'))
+  train_inputs = np.load('train_inputs.npy')
+  #np.save('train_inputs', train_inputs)
+  #train_labels = utils.load_data(utils.find_data_file('contest_dataset/train_labels.p'))
+  #np.save('train_labels', train_labels)
 
   n, d = train_inputs.shape 
-  #n = 10#00#0
-  train_inputs = train_inputs[:n]
-  train_labels = np.array(train_labels[:n]).astype('int32')
-  print train_labels
+  #n, d = 1000, 2304
+  n =  1178
+  n1 = 3000#00#0
+  n2 = 4178
+
+  train_inputs = train_inputs[n1:n2]
+  
+  #train_labels = np.array(train_labels[:n]).astype('int32')
+  k = 1000
   d_sqrt = int(np.sqrt(d))
-  dpatch_sqrt = 16
+  dpatch_sqrt = 6#16
   dpatch = dpatch_sqrt ** 2
    
-
+  '''
   # extract random patches 
   # kmeans requires lots of patches 
   # so i take ~ 400.000 patches
-  crop_n_patches = 120#00 
+  crop_n_patches = 100#00 
   R = utils.random_patch(d_sqrt, dpatch_sqrt, crop_n_patches)
   X = train_inputs[:, R].reshape((n * crop_n_patches, dpatch))
   X.astype('float32')
@@ -74,35 +82,53 @@ if __name__ == '__main__'  :
   k = 1000#100#1600
   iterations = 10
   centers = kmeans.spherical_kmeans(whiten_X, k, iterations)
+  pickle.dump(centers, open('centers.p', 'wb'))
   
-  # showtime 
-  show_n = 256
-  #print np.dot(centers[:show_n], inv_whitening_matrix).shape
-  utils.show_images(np.dot(centers[:show_n], inv_whitening_matrix).reshape((show_n, dpatch_sqrt, dpatch_sqrt)))
-
   '''
+  # showtime 
+  #show_n = 256
+  #print np.dot(centers[:show_n], inv_whitening_matrix).shape
+  #utils.show_images(np.dot(centers[:show_n], inv_whitening_matrix).reshape((show_n, dpatch_sqrt, dpatch_sqrt)))
+
+  ''' 
   # extract training features
   stride = 1
   patches_indexes = utils.extract_patches(d_sqrt, dpatch_sqrt, stride)
-  x = train_inputs[0]
   patches = train_inputs[:, patches_indexes] 
   patches = patches.reshape(( n * (d_sqrt - dpatch_sqrt + 1) ** 2 , dpatch))
   print 'preprocessing overlapping  patches ...'
   whitening_matrix = utils.compute_whitening_matrix(patches)
   #inv_whitening_matrix = np.linalg.inv(whitening_matrix)
   whiten_patches = np.dot(whitening_matrix, patches.T).T
+  np.save('whiten_patches4', whiten_patches)
+
+  #pickle.dump( whiten_patches, open('whiten_patches4.p', 'wb'))
   print 'done preprocessing'
-
-
+  '''
+  
   # compute the encoder
-  alpha = 0.5
-  features = compute_encoder(patches, centers, alpha)
+  alpha = 0.005
+  whiten_patches = np.load('whiten_patches1.npy')
+  #np.save('whiten_patches1', whiten_patches)
+  #centers = utils.load_data('/home/a1/ift6266/kmeans/centers.p')
+  centers = np.load('centers.npy')
+  
+  #np.save('centers', centers)
+
+  n = 250
+  #whiten_patches = whiten_patches[924500:1386750]
+  whiten_patches = whiten_patches[1386750:]
+
+  features = compute_encoder(whiten_patches, centers, alpha)
   features = features.reshape(( n, (d_sqrt - dpatch_sqrt + 1), (d_sqrt - dpatch_sqrt + 1), k))
 
   # Pool the features -> sum pooling
   pooled_features = sumPooling(features)
   pooled_features = utils.normalize(pooled_features)
-
+  print pooled_features.shape
+  np.save( 'pooled_features4', pooled_features)
+  
+  '''
   # train an one against all SVM 
   print 'training an one against all SVM '
   model = OneVsRestClassifier(LinearSVC()).fit(pooled_features, train_labels)#.predict(pooled_features)
@@ -127,7 +153,7 @@ if __name__ == '__main__'  :
   whiten_patches = np.dot(whitening_matrix, test_patches.T).T
   print 'done preprocessing'
 
-
+  
   # compute the encoder
   test_features = compute_encoder(test_patches, centers, alpha)
   test_features = test_features.reshape(( n, (d_sqrt - dpatch_sqrt + 1), (d_sqrt - dpatch_sqrt + 1), k))

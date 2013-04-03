@@ -63,7 +63,7 @@ n = 10
 param_sets = []
 learning_rates = np.random.uniform(low=0.002, high = 0.005, size = n)
 for i in xrange(n) :
-  param_sets.append({'dim': 1300, 'batch_size': 100, 'learning_rate': learning_rates[i], 'init_momentum': 0.0, 'weight_decay_coeff1': 0.0005, 'weight_decay_coeff2': 0.005, 'save_path': ''.join(['"one_mlp_layer/softmaxPool/best_pkl/mlp_best', str(i), '.pkl"'])})
+  param_sets.append({'dim': 120, 'batch_size': 100, 'learning_rate': 0.003795, 'init_momentum': 0.99, 'weight_decay_coeff1': 0.0, 'weight_decay_coeff2': 0.08, 'save_path': ''.join(['"one_mlp_layer/rectified/best_pkl/mlp_best', str(i), '.pkl"'])})
 
 for i, param_set in enumerate(param_sets):
   yaml_str = yaml_template % param_set
